@@ -60,7 +60,7 @@ bool canMove(int dx, int dy){
             if (blocks[b][i][j] != ' ') {
                 int xt = x + j + dx;
                 int yt = y + i + dy;
-                if (xt < 1 || xt >= W-1 || yt >= H-1 ) return false;s
+                if (xt < 1 || xt >= W-1 || yt >= H-1 ) return false;
                 if (board[yt][xt] != ' ') return false;
             }
     return true;
