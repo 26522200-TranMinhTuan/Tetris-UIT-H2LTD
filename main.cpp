@@ -80,3 +80,31 @@ void removeLine(){
         }
     }
 }
+
+int main()
+{
+    srand(time(0));
+    x = 5; y = 0; b = rand()%7; 
+    initBoard();
+    
+    while (1){
+        boardDelBlock();
+        if (kbhit()){
+            char c = getch();
+            if (c == 'a' && canMove(-1,0)) x--;
+            if (c == 'd' && canMove( 1,0)) x++;
+            if (c == 'x' && canMove( 0,1)) y++;
+            if (c == 'q') break;
+        }
+        if (canMove(0,1)) y++;
+        else{
+            block2Board();
+            removeLine();
+            x = 5; y = 0; b = rand()%7;
+        }
+        block2Board();
+        draw();
+        _sleep(500); 
+    }
+    return 0;
+}
