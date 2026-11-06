@@ -53,3 +53,15 @@ void boardDelBlock(){
             if (blocks[b][i][j] != ' ')
                 board[y+i][x+j] = ' ';
 }
+
+bool canMove(int dx, int dy){
+    for (int i = 0; i < 4; i++ )
+        for (int j = 0; j < 4; j++ )
+            if (blocks[b][i][j] != ' ') {
+                int xt = x + j + dx;
+                int yt = y + i + dy;
+                if (xt < 1 || xt >= W-1 || yt >= H-1 ) return false;s
+                if (board[yt][xt] != ' ') return false;
+            }
+    return true;
+}
