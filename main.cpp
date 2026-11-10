@@ -77,6 +77,14 @@ int loadHighScore() {
     return hs;
 }
 
+void saveHighScore(int currentScore) {
+    if (currentScore >= highScore) {
+        highScore = currentScore;
+        ofstream file("highscore.txt");
+        if (file.is_open()) { file << highScore << endl; file.flush(); file.close(); }
+    }
+}
+
 bool canMoveCustom(PlayerState& p, int dx, int dy, char testBlock[4][4]) {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
