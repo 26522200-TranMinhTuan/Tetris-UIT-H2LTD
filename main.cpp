@@ -59,3 +59,17 @@ void handleHardDrop(PlayerState& p, char key) {
         while (p.y < H - 2) p.y++;
     }
 }
+
+bool canMoveCustom(PlayerState& p, int dx, int dy, char testBlock[4][4]) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (testBlock[i][j] != ' ') {
+                int xt = p.x + j + dx;
+                int yt = p.y + i + dy;
+                if (xt < 1 || xt >= W - 1 || yt < 1 || yt >= H - 1) return false;
+                if (p.board[yt][xt] != ' ') return false;
+            }
+        }
+    }
+    return true;
+}
