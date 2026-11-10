@@ -151,3 +151,4 @@ int removeLine(PlayerState& p) {
 
 // Refactor: Tự động hủy thao tác xoay (Rollback) nếu vị trí mới bị đè tường hoặc gạch
 // Test: Kiểm tra trường hợp biên (Edge-case) xoay khối I và L sát viền phải W-1
+// Fix: Cập nhật hệ số tính điểm combo theo số lượng hàng xóa cùng lúc
