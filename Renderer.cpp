@@ -14,3 +14,10 @@ ConsoleRenderer::ConsoleRenderer(int width, int height)
     SMALL_RECT rectWindow = { 0, 0, (short)(screenWidth - 1), (short)(screenHeight - 1) };
     SetConsoleWindowInfo(hConsole, TRUE, &rectWindow);
 }
+
+void ConsoleRenderer::clearBuffer() {
+    for (int i = 0; i < screenWidth * screenHeight; i++) {
+        screenBuffer[i] = L' ';
+        attrBuffer[i] = 15; 
+    }
+}
