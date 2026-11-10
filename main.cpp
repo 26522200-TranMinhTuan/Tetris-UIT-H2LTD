@@ -22,6 +22,12 @@ const char blocks[7][4][4] = {
     {{' ',' ',' ',' '},{' ',' ','L',' '},{'L','L','L',' '},{' ',' ',' ',' '}}
 };
 
+void rotateBlock(char matrix[4][4]) {
+    char temp[4][4];
+    for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) temp[j][3 - i] = matrix[i][j];
+    for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) matrix[i][j] = temp[i][j];
+}
+
 struct PlayerState {
     char board[H][W];
     int x, y, b;
