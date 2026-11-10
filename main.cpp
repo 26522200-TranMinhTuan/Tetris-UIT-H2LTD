@@ -35,6 +35,8 @@ struct PlayerState {
     bool gameOver;
     int dropCounter;
 
+    char currentShape[4][4];
+
     void reset() {
         score = 0;
         gameOver = false;
@@ -102,7 +104,16 @@ bool tryRotate(PlayerState& p) {
     return false;
 }
 
-// =========================================================
-// CORE ENGINE GAME LOOP - UIT H2LTD TETRIS
-// Quản lý vòng lặp chính, thời gian rơi tự động và bắt phím
-// =========================================================
+void lockBlockToBoard(PlayerState& p) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (p.currentShape[i][j] != ' ') {
+                int boardY = p.y + i;
+                int boardX = p.x + j;
+                if (boardY >= 1 && boardY < H - 1 && boardX >= 1 && boardX < W - 1) {
+                    p.board[boardY][boardX] = p.currentShape[i][j];
+                }
+            }
+        }
+    }
+}
