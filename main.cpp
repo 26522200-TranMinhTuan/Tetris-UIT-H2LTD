@@ -7,3 +7,6 @@
 #include <chrono>
 
 using namespace std;
+
+#define H 25
+#define W 14
