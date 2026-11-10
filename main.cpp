@@ -339,6 +339,135 @@ void renderVersus(ConsoleRenderer& renderer, PlayerState& p1, PlayerState& p2, i
     renderer.render();
 }
 
+void runVersusMode(ConsoleRenderer& renderer) {
+    PlayerState p1, p2;
+    p1.reset(); p2.reset();
+    bool quitToMenu = false;
+
+    auto startTime = std::chrono::steady_clock::now();
+    renderVersus(renderer, p1, p2, 0, 1);
+
+    while (!quitToMenu) {
+        auto now = std::chrono::steady_clock::now();
+        int gameTimeSec = (int)std::chrono::duration_cast<std::chrono::seconds>(now - startTime).count();
+        int speedLevel = (gameTimeSec / 20) + 1;
+        int dropSpeedTicks = max(3, 30 - (speedLevel - 1) * 3);
+
+        if (p1.gameOver || p2.gameOver) {
+            renderVersus(renderer, p1, p2, gameTimeSec, speedLevel);
+            char c = getch();
+            char lowC = tolower(c);
+            if (lowC == 'r') { 
+                p1.reset(); p2.reset(); 
+                startTime = std::chrono::steady_clock::now(); 
+                renderVersus(renderer, p1, p2, 0, 1); continue; 
+            }
+            if (lowC == 'q') break;
+            continue;
+        }
+
+        bool hasMoved = false;
+
+        while (kbhit()) {
+            char c = getch();
+            char lowC = tolower(c);
+
+            // PLAYER 1 INPUT
+            if (!p1.gameOver && (lowC == 'a' || lowC == 'd' || lowC == 's' || lowC == 'w' || lowC == 'c' || c == ' ')) {
+                if (lowC == 'a' && canMove(p1, -1, 0)) { p1.x--; hasMoved = true; playSoundAsync(400, 30); }
+                else if (lowC == 'd' && canMove(p1, 1, 0)) { p1.x++; hasMoved = true; playSoundAsync(400, 30); }
+                else if (lowC == 's' && canMove(p1, 0, 1)) { p1.y++; hasMoved = true; playSoundAsync(400, 30); }
+                else if (c == ' ') { 
+                    playSoundAsync(350, 80);
+                    while (canMove(p1, 0, 1)) p1.y++; 
+                    lockAndSpawnNext(p1, &p2); 
+                    hasMoved = true; 
+                }
+                else if (lowC == 'w') {
+                    char temp[4][4]; memcpy(temp, p1.currentShape, sizeof(temp)); rotateBlock(temp);
+                    if (canMoveCustom(p1, 0, 0, temp)) { 
+                        memcpy(p1.currentShape, temp, sizeof(p1.currentShape)); hasMoved = true; playSoundAsync(600, 40); 
+                    }
+                }
+                else if (lowC == 'c' && p1.canHold) {
+                    if (p1.hold_b == -1) { p1.hold_b = p1.b; p1.b = p1.next_b; p1.next_b = rand() % 7; }
+                    else { swap(p1.b, p1.hold_b); }
+                    memcpy(p1.currentShape, blocks[p1.b], sizeof(p1.currentShape));
+                    p1.x = W / 2 - 2; p1.y = 1; p1.canHold = false; hasMoved = true;
+                    playSoundAsync(500, 50);
+                }
+            }
+
+            // PLAYER 2 INPUT 
+            else if (!p2.gameOver && (lowC == 'j' || lowC == 'l' || lowC == 'k' || lowC == 'i' || lowC == 'o' || c == '\r')) {
+                if (lowC == 'j' && canMove(p2, -1, 0)) { p2.x--; hasMoved = true; playSoundAsync(400, 30); }
+                else if (lowC == 'l' && canMove(p2, 1, 0)) { p2.x++; hasMoved = true; playSoundAsync(400, 30); }
+                else if (lowC == 'k' && canMove(p2, 0, 1)) { p2.y++; hasMoved = true; playSoundAsync(400, 30); }
+                else if (c == '\r') { 
+                    playSoundAsync(350, 80);
+                    while (canMove(p2, 0, 1)) p2.y++; 
+                    lockAndSpawnNext(p2, &p1); 
+                    hasMoved = true; 
+                }
+                else if (lowC == 'i') {
+                    char temp[4][4]; memcpy(temp, p2.currentShape, sizeof(temp)); rotateBlock(temp);
+                    if (canMoveCustom(p2, 0, 0, temp)) { 
+                        memcpy(p2.currentShape, temp, sizeof(p2.currentShape)); hasMoved = true; playSoundAsync(600, 40);
+                    }
+                }
+                else if (lowC == 'o' && p2.canHold) {
+                    if (p2.hold_b == -1) { p2.hold_b = p2.b; p2.b = p2.next_b; p2.next_b = rand() % 7; }
+                    else { swap(p2.b, p2.hold_b); }
+                    memcpy(p2.currentShape, blocks[p2.b], sizeof(p2.currentShape));
+                    p2.x = W / 2 - 2; p2.y = 1; p2.canHold = false; hasMoved = true;
+                    playSoundAsync(500, 50);
+                }
+            }
+
+            else if (lowC == 'r') { 
+                p1.reset(); p2.reset(); 
+                startTime = std::chrono::steady_clock::now(); 
+                hasMoved = true; break; 
+            }
+            else if (lowC == 'q') { quitToMenu = true; break; }
+        }
+
+        if (quitToMenu) break;
+
+        if (!p1.gameOver) {
+            p1.dropCounter++;
+            if (p1.dropCounter >= dropSpeedTicks) {
+                p1.dropCounter = 0;
+                if (canMove(p1, 0, 1)) {
+                    p1.y++;
+                } else {
+                    lockAndSpawnNext(p1, &p2);
+                }
+                hasMoved = true;
+            }
+        }
+
+        if (!p2.gameOver) {
+            p2.dropCounter++;
+            if (p2.dropCounter >= dropSpeedTicks) {
+                p2.dropCounter = 0;
+                if (canMove(p2, 0, 1)) {
+                    p2.y++;
+                } else {
+                    lockAndSpawnNext(p2, &p1);
+                }
+                hasMoved = true;
+            }
+        }
+
+        if (hasMoved || p1.gameOver || p2.gameOver) {
+            renderVersus(renderer, p1, p2, gameTimeSec, speedLevel);
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
 int main() {
     srand((unsigned int)time(0));
     ConsoleRenderer renderer(120, 35);
