@@ -49,3 +49,7 @@ void handleHorizontalInput(PlayerState& p, char key) {
     if (key == 'a' || key == 'A') p.x--;
     else if (key == 'd' || key == 'D') p.x++;
 }
+
+void handleSoftDrop(PlayerState& p, char key) {
+    if (key == 's' || key == 'S') p.y++;
+}
