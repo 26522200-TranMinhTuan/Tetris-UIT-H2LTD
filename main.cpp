@@ -469,7 +469,8 @@ void runVersusMode(ConsoleRenderer& renderer) {
 }
 
 int main() {
-    srand((unsigned int)time(0));
+    srand(time(0));
+    highScore = loadHighScore();
     ConsoleRenderer renderer(120, 35);
 
     bool running = true;
@@ -481,6 +482,8 @@ int main() {
         char choice = getch();
         if (choice == '1') {
             runSoloMode(renderer);
+        } else if (choice == '2') {
+            runVersusMode(renderer);
         } else if (choice == '3' || choice == 'q' || choice == 'Q') {
             running = false;
         }
