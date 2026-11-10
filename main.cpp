@@ -73,3 +73,8 @@ bool canMoveCustom(PlayerState& p, int dx, int dy, char testBlock[4][4]) {
     }
     return true;
 }
+
+// =========================================================
+// CORE ENGINE GAME LOOP - UIT H2LTD TETRIS
+// Quản lý vòng lặp chính, thời gian rơi tự động và bắt phím
+// =========================================================
