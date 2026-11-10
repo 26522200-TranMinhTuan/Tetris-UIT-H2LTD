@@ -91,6 +91,17 @@ bool canMoveCustom(PlayerState& p, int dx, int dy, char testBlock[4][4]) {
     return true;
 }
 
+bool tryRotate(PlayerState& p) {
+    char temp[4][4];
+    memcpy(temp, p.currentShape, sizeof(temp));
+    rotateBlock(temp);
+    if (canMoveCustom(p, 0, 0, temp)) {
+        memcpy(p.currentShape, temp, sizeof(p.currentShape));
+        return true;
+    }
+    return false;
+}
+
 // =========================================================
 // CORE ENGINE GAME LOOP - UIT H2LTD TETRIS
 // Quản lý vòng lặp chính, thời gian rơi tự động và bắt phím
