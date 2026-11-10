@@ -119,6 +119,22 @@ void lockBlockToBoard(PlayerState& p) {
     }
 }
 
+void pushGarbageLines(PlayerState& p, int count) {
+    if (count <= 0) return;
+    int hole = rand() % (W - 2) + 1;
+    for (int k = 0; k < count; k++) {
+        for (int i = 1; i < H - 2; i++) {
+            for (int j = 1; j < W - 1; j++) {
+                p.board[i][j] = p.board[i + 1][j];
+            }
+        }
+        for (int j = 1; j < W - 1; j++) {
+            if (j == hole) p.board[H - 2][j] = ' ';
+            else p.board[H - 2][j] = 'X';
+        }
+    }
+}
+
 int removeLine(PlayerState& p) {
     int linesCleared = 0;
     for (int i = H - 2; i > 0; i--) {
