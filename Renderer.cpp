@@ -70,3 +70,14 @@ void ConsoleRenderer::drawVersusUI(int score1, int hold1, int next1, int garbage
     swprintf_s(&screenBuffer[4 * screenWidth + 2], 18, L"--- PLAYER 1 ---");
     swprintf_s(&screenBuffer[4 * screenWidth + 100], 18, L"--- PLAYER 2 ---");
 }
+
+void ConsoleRenderer::drawMainMenu() {
+    int startX = 40;
+    swprintf_s(&screenBuffer[6 * screenWidth + startX], 40, L"████████████████████████████████████████");
+    swprintf_s(&screenBuffer[7 * screenWidth + startX], 40, L"██    T E T R I S  -  U I T  H2LTD    ██");
+    swprintf_s(&screenBuffer[8 * screenWidth + startX], 40, L"████████████████████████████████████████");
+
+    swprintf_s(&screenBuffer[12 * screenWidth + startX], 40, L"    [ 1 ]  SOLO MODE  (Single Player)   ");
+    swprintf_s(&screenBuffer[14 * screenWidth + startX], 40, L"    [ 2 ]  VERSUS MODE (2 Players 1v1)  ");
+    swprintf_s(&screenBuffer[16 * screenWidth + startX], 40, L"    [ Q ]  EXIT GAME                    ");
+}
