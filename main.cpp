@@ -5,6 +5,7 @@
 #include <time.h>    
 #include <thread>
 #include <chrono>
+#include "Renderer.h"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ const char blocks[7][4][4] = {
     {{' ',' ',' ',' '},{' ',' ','L',' '},{'L','L','L',' '},{' ',' ',' ',' '}}
 };
 
-// --- HỆ THỐNG ÂM THANH RETRO ---
+// --- HỆ THỐNG ÂM THANH RETRO (Trúc) ---
 void playSoundAsync(int freq, int duration) {
     std::thread([freq, duration]() {
         Beep(freq, duration);
@@ -38,19 +39,24 @@ void rotateBlock(char matrix[4][4]) {
 struct PlayerState {
     char board[H][W];
     int x, y, b;
+    int next_b, hold_b;
+    bool canHold;
     int score;
     bool gameOver;
     int dropCounter;
-
-    char currentShape[4][4];
+    char currentShape[4][4]; 
 
     void reset() {
         score = 0;
         gameOver = false;
+        hold_b = -1;
+        canHold = true;
         dropCounter = 0;
         x = W / 2 - 2;
         y = 1;
         b = rand() % 7;
+        next_b = rand() % 7;
+        memcpy(currentShape, blocks[b], sizeof(currentShape));
 
         for (int i = 0; i < H; i++) {
             for (int j = 0; j < W; j++) {
@@ -60,31 +66,6 @@ struct PlayerState {
         }
     }
 };
-
-void updateGravity(PlayerState& p, int dropSpeedTicks) {
-    if (!p.gameOver) {
-        p.dropCounter++;
-        if (p.dropCounter >= dropSpeedTicks) {
-            p.dropCounter = 0;
-            p.y++;
-        }
-    }
-}
-
-void handleHorizontalInput(PlayerState& p, char key) {
-    if (key == 'a' || key == 'A') p.x--;
-    else if (key == 'd' || key == 'D') p.x++;
-}
-
-void handleSoftDrop(PlayerState& p, char key) {
-    if (key == 's' || key == 'S') p.y++;
-}
-
-void handleHardDrop(PlayerState& p, char key) {
-    if (key == ' ') {
-        while (p.y < H - 2) p.y++;
-    }
-}
 
 bool canMoveCustom(PlayerState& p, int dx, int dy, char testBlock[4][4]) {
     for (int i = 0; i < 4; i++) {
@@ -100,15 +81,8 @@ bool canMoveCustom(PlayerState& p, int dx, int dy, char testBlock[4][4]) {
     return true;
 }
 
-bool tryRotate(PlayerState& p) {
-    char temp[4][4];
-    memcpy(temp, p.currentShape, sizeof(temp));
-    rotateBlock(temp);
-    if (canMoveCustom(p, 0, 0, temp)) {
-        memcpy(p.currentShape, temp, sizeof(p.currentShape));
-        return true;
-    }
-    return false;
+bool canMove(PlayerState& p, int dx, int dy) {
+    return canMoveCustom(p, dx, dy, p.currentShape);
 }
 
 void lockBlockToBoard(PlayerState& p) {
@@ -123,13 +97,6 @@ void lockBlockToBoard(PlayerState& p) {
             }
         }
     }
-}
-
-bool isRowFull(PlayerState& p, int row) {
-    for (int j = 1; j < W - 1; j++) {
-        if (p.board[row][j] == ' ') return false;
-    }
-    return true;
 }
 
 int removeLine(PlayerState& p) {
@@ -150,12 +117,170 @@ int removeLine(PlayerState& p) {
     }
 
     if (linesCleared > 0) {
+        if (linesCleared >= 4) {
+            playSoundAsync(1000, 100); playSoundAsync(1200, 150); // Ăn Tetris
+        } else {
+            playSoundAsync(800, 150); // Ăn hàng thường
+        }
         p.score += linesCleared * 100;
+    } else {
+        playSoundAsync(250, 100); // Âm thanh khóa gạch khi không ăn điểm
     }
-
     return linesCleared;
 }
 
-// Refactor: Tự động hủy thao tác xoay (Rollback) nếu vị trí mới bị đè tường hoặc gạch
-// Test: Kiểm tra trường hợp biên (Edge-case) xoay khối I và L sát viền phải W-1
-// Fix: Cập nhật hệ số tính điểm combo theo số lượng hàng xóa cùng lúc
+void lockAndSpawnNext(PlayerState& p) {
+    lockBlockToBoard(p);
+    removeLine(p);
+    p.x = W / 2 - 2; 
+    p.y = 1; 
+    p.b = p.next_b; 
+    p.next_b = rand() % 7; 
+    memcpy(p.currentShape, blocks[p.b], sizeof(p.currentShape)); 
+    p.canHold = true;
+    p.dropCounter = 0;
+
+    if (!canMove(p, 0, 0)) {
+        p.gameOver = true;
+        playSoundAsync(200, 500); // Âm thanh Game Over
+    }
+}
+
+void getDisplayField(PlayerState& p, unsigned char* outField) {
+    for (int r = 0; r < H; r++) {
+        for (int c = 0; c < W; c++) {
+            char ch = p.board[r][c];
+            if (ch == '#') outField[r * W + c] = 9;
+            else if (ch >= 'A' && ch <= 'Z') outField[r * W + c] = (ch % 7) + 1;
+            else outField[r * W + c] = 0;
+        }
+    }
+
+    if (!p.gameOver) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (p.currentShape[i][j] != ' ') {
+                    int boardY = p.y + i;
+                    int boardX = p.x + j;
+                    if (boardY >= 1 && boardY < H - 1 && boardX >= 1 && boardX < W - 1) {
+                        outField[boardY * W + boardX] = (p.currentShape[i][j] % 7) + 1;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void renderSolo(ConsoleRenderer& renderer, PlayerState& p, int gameTimeSec, int level) {
+    renderer.clearBuffer();
+    unsigned char tempField[H * W] = { 0 };
+    getDisplayField(p, tempField);
+    renderer.drawBoardAt(tempField, W, H, 25, 3);
+    renderer.drawUI(p.score, 0, p.next_b, p.hold_b, 0, gameTimeSec, level, p.gameOver);
+    renderer.render();
+}
+
+void runSoloMode(ConsoleRenderer& renderer) {
+    PlayerState p;
+    p.reset();
+    bool quitToMenu = false;
+
+    auto startTime = std::chrono::steady_clock::now();
+    renderSolo(renderer, p, 0, 1);
+
+    while (!quitToMenu) {
+        auto now = std::chrono::steady_clock::now();
+        int gameTimeSec = (int)std::chrono::duration_cast<std::chrono::seconds>(now - startTime).count();
+        int level = (gameTimeSec / 25) + 1;
+        int dropSpeedTicks = max(3, 30 - (level - 1) * 3);
+
+        if (p.gameOver) {
+            renderSolo(renderer, p, gameTimeSec, level);
+            char c = getch();
+            char lowC = tolower(c);
+            if (lowC == 'r') { 
+                p.reset(); 
+                startTime = std::chrono::steady_clock::now(); 
+                renderSolo(renderer, p, 0, 1); 
+                continue; 
+            }
+            if (lowC == 'q') break;
+            continue;
+        }
+
+        bool hasMoved = false;
+        while (kbhit()) {
+            char c = getch();
+            char lowC = tolower(c);
+
+            if (lowC == 'a' && canMove(p, -1, 0)) { p.x--; hasMoved = true; playSoundAsync(400, 30); }
+            else if (lowC == 'd' && canMove(p, 1, 0)) { p.x++; hasMoved = true; playSoundAsync(400, 30); }
+            else if (lowC == 's' && canMove(p, 0, 1)) { p.y++; hasMoved = true; playSoundAsync(400, 30); }
+            else if (c == ' ') { 
+                playSoundAsync(350, 80); // Drop sound
+                while (canMove(p, 0, 1)) p.y++; 
+                lockAndSpawnNext(p);
+                hasMoved = true;
+                break;
+            }
+            else if (lowC == 'w') {
+                char temp[4][4]; memcpy(temp, p.currentShape, sizeof(temp)); rotateBlock(temp);
+                if (canMoveCustom(p, 0, 0, temp)) { 
+                    memcpy(p.currentShape, temp, sizeof(p.currentShape)); 
+                    hasMoved = true; 
+                    playSoundAsync(600, 40); // Rotate sound
+                }
+            }
+            else if (lowC == 'c' && p.canHold) {
+                if (p.hold_b == -1) { p.hold_b = p.b; p.b = p.next_b; p.next_b = rand() % 7; }
+                else { swap(p.b, p.hold_b); }
+                memcpy(p.currentShape, blocks[p.b], sizeof(p.currentShape));
+                p.x = W / 2 - 2; p.y = 1; p.canHold = false; hasMoved = true;
+                playSoundAsync(500, 50); // Hold sound
+            }
+            else if (lowC == 'r') { p.reset(); startTime = std::chrono::steady_clock::now(); hasMoved = true; break; }
+            else if (lowC == 'q') { quitToMenu = true; break; }
+        }
+
+        if (quitToMenu) break;
+
+        if (!p.gameOver) {
+            p.dropCounter++;
+            if (p.dropCounter >= dropSpeedTicks) {
+                p.dropCounter = 0;
+                if (canMove(p, 0, 1)) {
+                    p.y++;
+                } else {
+                    lockAndSpawnNext(p);
+                }
+                hasMoved = true;
+            }
+        }
+
+        if (hasMoved || p.gameOver) {
+            renderSolo(renderer, p, gameTimeSec, level);
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
+int main() {
+    srand((unsigned int)time(0));
+    ConsoleRenderer renderer(120, 35);
+
+    bool running = true;
+    while (running) {
+        renderer.clearBuffer();
+        renderer.drawMainMenu();
+        renderer.render();
+
+        char choice = getch();
+        if (choice == '1') {
+            runSoloMode(renderer);
+        } else if (choice == '3' || choice == 'q' || choice == 'Q') {
+            running = false;
+        }
+    }
+    return 0;
+}
