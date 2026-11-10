@@ -324,6 +324,21 @@ void runSoloMode(ConsoleRenderer& renderer) {
     }
 }
 
+void renderVersus(ConsoleRenderer& renderer, PlayerState& p1, PlayerState& p2, int gameTimeSec, int speedLevel) {
+    renderer.clearBuffer();
+    unsigned char field1[H * W] = { 0 }, field2[H * W] = { 0 };
+    getDisplayField(p1, field1);
+    getDisplayField(p2, field2);
+
+    renderer.drawBoardAt(field1, W, H, 22, 3);
+    renderer.drawBoardAt(field2, W, H, 68, 3);
+    renderer.drawVersusUI(p1.score, p1.hold_b, p1.next_b, p1.pendingGarbage,
+                         p2.score, p2.hold_b, p2.next_b, p2.pendingGarbage,
+                         gameTimeSec, speedLevel,
+                         p1.gameOver, p2.gameOver);
+    renderer.render();
+}
+
 int main() {
     srand((unsigned int)time(0));
     ConsoleRenderer renderer(120, 35);
