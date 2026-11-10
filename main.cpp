@@ -10,3 +10,11 @@ using namespace std;
 
 #define H 25
 #define W 14
+
+struct PlayerState {
+    char board[H][W];
+    int x, y, b;
+    int score;
+    bool gameOver;
+    int dropCounter;
+};
