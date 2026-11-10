@@ -34,3 +34,13 @@ struct PlayerState {
         }
     }
 };
+
+void updateGravity(PlayerState& p, int dropSpeedTicks) {
+    if (!p.gameOver) {
+        p.dropCounter++;
+        if (p.dropCounter >= dropSpeedTicks) {
+            p.dropCounter = 0;
+            p.y++;
+        }
+    }
+}
