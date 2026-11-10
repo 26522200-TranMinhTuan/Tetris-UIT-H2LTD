@@ -42,12 +42,14 @@ struct PlayerState {
     int next_b, hold_b;
     bool canHold;
     int score;
+    int pendingGarbage;
     bool gameOver;
     int dropCounter;
     char currentShape[4][4]; 
 
     void reset() {
         score = 0;
+        pendingGarbage = 0;
         gameOver = false;
         hold_b = -1;
         canHold = true;
