@@ -141,5 +141,10 @@ int removeLine(PlayerState& p) {
             i++;
         }
     }
+
+    if (linesCleared > 0) {
+        p.score += linesCleared * 100;
+    }
+
     return linesCleared;
 }
