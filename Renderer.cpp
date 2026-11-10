@@ -39,6 +39,11 @@ void ConsoleRenderer::drawBoardAt(const unsigned char* field, int fieldWidth, in
                 screenBuffer[screenIdx + 1] = L'\x2588';
                 attrBuffer[screenIdx] = colors[index];
                 attrBuffer[screenIdx + 1] = colors[index];
+            } else if (index == 10) { // Dòng rác `X` - Khối nhiễu mờ
+                screenBuffer[screenIdx] = L'\x2592';
+                screenBuffer[screenIdx + 1] = L'\x2592';
+                attrBuffer[screenIdx] = 7;
+                attrBuffer[screenIdx + 1] = 7;
             }
         }
     }
