@@ -148,3 +148,5 @@ int removeLine(PlayerState& p) {
 
     return linesCleared;
 }
+
+// Refactor: Tự động hủy thao tác xoay (Rollback) nếu vị trí mới bị đè tường hoặc gạch
