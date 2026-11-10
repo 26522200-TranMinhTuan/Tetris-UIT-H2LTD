@@ -117,3 +117,10 @@ void lockBlockToBoard(PlayerState& p) {
         }
     }
 }
+
+bool isRowFull(PlayerState& p, int row) {
+    for (int j = 1; j < W - 1; j++) {
+        if (p.board[row][j] == ' ') return false;
+    }
+    return true;
+}
