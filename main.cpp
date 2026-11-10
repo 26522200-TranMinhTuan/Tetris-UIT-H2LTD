@@ -188,9 +188,9 @@ int removeLine(PlayerState& p, PlayerState* opponent = nullptr) {
     return linesCleared;
 }
 
-void lockAndSpawnNext(PlayerState& p) {
+void lockAndSpawnNext(PlayerState& p, PlayerState* opponent = nullptr) {
     lockBlockToBoard(p);
-    removeLine(p);
+    removeLine(p, opponent);
     p.x = W / 2 - 2; 
     p.y = 1; 
     p.b = p.next_b; 
@@ -201,7 +201,7 @@ void lockAndSpawnNext(PlayerState& p) {
 
     if (!canMove(p, 0, 0)) {
         p.gameOver = true;
-        playSoundAsync(200, 500); // Âm thanh Game Over
+        playSoundAsync(200, 500); 
     }
 }
 
