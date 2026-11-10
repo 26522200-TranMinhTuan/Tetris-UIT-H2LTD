@@ -135,7 +135,7 @@ void pushGarbageLines(PlayerState& p, int count) {
     }
 }
 
-int removeLine(PlayerState& p) {
+int removeLine(PlayerState& p, PlayerState* opponent = nullptr) {
     int linesCleared = 0;
     for (int i = H - 2; i > 0; i--) {
         bool isFull = true;
@@ -154,13 +154,36 @@ int removeLine(PlayerState& p) {
 
     if (linesCleared > 0) {
         if (linesCleared >= 4) {
-            playSoundAsync(1000, 100); playSoundAsync(1200, 150); // Ăn Tetris
+            playSoundAsync(1000, 100); playSoundAsync(1200, 150); 
         } else {
-            playSoundAsync(800, 150); // Ăn hàng thường
+            playSoundAsync(800, 150); 
         }
+        
         p.score += linesCleared * 100;
+        int garbageToSend = 0;
+        if (linesCleared == 2) garbageToSend = 1;
+        else if (linesCleared == 3) garbageToSend = 2;
+        else if (linesCleared >= 4) garbageToSend = 4;
+
+        if (p.pendingGarbage > 0 && garbageToSend > 0) {
+            if (p.pendingGarbage >= garbageToSend) {
+                p.pendingGarbage -= garbageToSend;
+                garbageToSend = 0;
+            } else {
+                garbageToSend -= p.pendingGarbage;
+                p.pendingGarbage = 0;
+            }
+        }
+
+        if (garbageToSend > 0 && opponent != nullptr) {
+            opponent->pendingGarbage += garbageToSend;
+        }
     } else {
-        playSoundAsync(250, 100); // Âm thanh khóa gạch khi không ăn điểm
+        playSoundAsync(250, 100); 
+        if (p.pendingGarbage > 0) {
+            pushGarbageLines(p, p.pendingGarbage);
+            p.pendingGarbage = 0;
+        }
     }
     return linesCleared;
 }
