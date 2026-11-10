@@ -48,3 +48,14 @@ void ConsoleRenderer::drawBoardAt(const unsigned char* field, int fieldWidth, in
         }
     }
 }
+
+void ConsoleRenderer::drawUI(int score, int highScore, int nextBlockId, int holdBlockId, int linesCleared, int gameTimeSec, int level, bool isGameOver) {
+    int uiX = 70; 
+    swprintf_s(&screenBuffer[2 * screenWidth + uiX], 30, L"T E T R I S  (SOLO)");
+    swprintf_s(&screenBuffer[3 * screenWidth + uiX], 30, L"UIT - H2LTD");
+
+    swprintf_s(&screenBuffer[5 * screenWidth + uiX], 30, L"TIME  : %02d:%02d", gameTimeSec / 60, gameTimeSec % 60);
+    swprintf_s(&screenBuffer[6 * screenWidth + uiX], 30, L"LEVEL : %02d", level);
+    swprintf_s(&screenBuffer[7 * screenWidth + uiX], 30, L"SCORE : %06d", score);
+    swprintf_s(&screenBuffer[8 * screenWidth + uiX], 30, L"HIGH  : %06d", highScore);
+}
