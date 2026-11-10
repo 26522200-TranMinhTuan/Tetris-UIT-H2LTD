@@ -157,7 +157,7 @@ int removeLine(PlayerState& p, PlayerState* opponent = nullptr) {
             playSoundAsync(800, 150);
         }
         
-        p.score += linesCleared * 150;
+        p.score += linesCleared * 100;
         int garbageToSend = 0;
         if (linesCleared == 2) garbageToSend = 1;
         else if (linesCleared == 3) garbageToSend = 2;
