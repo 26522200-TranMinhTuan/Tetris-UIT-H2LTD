@@ -124,3 +124,22 @@ bool isRowFull(PlayerState& p, int row) {
     }
     return true;
 }
+
+int removeLine(PlayerState& p) {
+    int linesCleared = 0;
+    for (int i = H - 2; i > 0; i--) {
+        bool isFull = true;
+        for (int j = 1; j < W - 1; j++) {
+            if (p.board[i][j] == ' ') { isFull = false; break; }
+        }
+        if (isFull) {
+            linesCleared++;
+            for (int ii = i; ii > 1; ii--) {
+                for (int jj = 1; jj < W - 1; jj++) p.board[ii][jj] = p.board[ii - 1][jj];
+            }
+            for (int jj = 1; jj < W - 1; jj++) p.board[1][jj] = ' ';
+            i++;
+        }
+    }
+    return linesCleared;
+}
