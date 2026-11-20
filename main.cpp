@@ -7,6 +7,7 @@ using namespace std;
 char board[H][W] = {};
 
 int x, y, b;
+int dropDelay = 500;
 char blocks[][4][4] ={
         {{' ','I',' ',' '},
          {' ','I',' ',' '},
@@ -115,6 +116,8 @@ void removeLine() {
         for (j = 1; j < W - 1; j++)
             if (board[i][j] == ' ') break;
         if (j == W - 1) {
+            dropDelay -= 50;
+            if (dropDelay < 100) dropDelay = 100;
             for (int ii = i; ii > 1; ii--)
                 for (int jj = 1; jj < W - 1; jj++)
                     board[ii][jj] = board[ii - 1][jj];
@@ -149,7 +152,7 @@ int main()
         }
         block2Board();
         draw();
-        _sleep(500);
+        _sleep(dropDelay);
     }
     return 0;
 }
