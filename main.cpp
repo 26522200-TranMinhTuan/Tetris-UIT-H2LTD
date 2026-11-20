@@ -109,6 +109,27 @@ void draw(){
         for (int j = 0 ; j < W ; j++) cout<<board[i][j];
 }
 
+int removeLine() {
+    int linesCleared = 0;
+    for (int i = H - 2; i > 0; i--) {
+        int j;
+        for (j = 1; j < W - 1; j++)
+            if (board[i][j] == ' ') break;
+        if (j == W - 1) {
+            linesCleared++;
+            for (int ii = i; ii > 1; ii--)
+                for (int jj = 1; jj < W - 1; jj++)
+                    board[ii][jj] = board[ii - 1][jj];
+            for (int jj = 1; jj < W - 1; jj++)
+                board[1][jj] = ' ';
+            i++;
+            draw();
+            _sleep(200);
+        }
+    }
+    return linesCleared;
+}
+
 int main()
 {
     srand(time(0));
@@ -126,6 +147,7 @@ int main()
         if (canMove(0,1)) y++;
         else{
             block2Board();
+            removeLine();
             x = 5; y = 0; b = rand()%7;
         }
         block2Board();
