@@ -102,11 +102,15 @@ void initBoard(){
             if (i == 0 || i == H-1 || j ==0 || j == W-1) board[i][j] = '#';
             else board[i][j] = ' ';
 }
-void draw(){
+void draw() {
     system("cls");
-
-    for (int i = 0 ; i < H ; i++, cout<<endl)
-        for (int j = 0 ; j < W ; j++) cout<<board[i][j];
+    for (int i = 0; i < H; i++, cout << endl) {
+        for (int j = 0; j < W; j++) {
+            if (board[i][j] == '#') cout << "##";
+            else if (board[i][j] != ' ') cout << "[]";
+            else cout << "  ";
+        }
+    }
 }
 
 int main()
